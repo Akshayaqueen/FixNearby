@@ -10,6 +10,7 @@ import Services from './pages/Services';
 import WorkerProfile from './pages/WorkerProfile';
 import Profile from './pages/Profile';
 import Bookings from './pages/Bookings';
+import HelpCenter from './pages/HelpCenter';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/worker/:id" element={<WorkerProfile />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/bookings" element={<Bookings />} />
+            <Route path="/help" element={<HelpCenter />} />
             {/* TODO: Add more routes here */}
           </Routes>
         </main>
