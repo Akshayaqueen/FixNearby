@@ -2,6 +2,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { getDistanceKm, formatDistance } from "../utils/distance";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 const Services = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +13,7 @@ const Services = () => {
     searchParams.get("search") || ""
   );
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [priceRange, setPriceRange] = useState([20, 80]);
   const [workers, setWorkers] = useState([]);
   const [error, setError] = useState(null);
 
@@ -128,10 +131,11 @@ const Services = () => {
     });
   }, [workers, coords]);
 
-  // 🔍 Filtering (FIXED)
+  // 🔍 Filtering with price range
   const filteredWorkers = useMemo(() => {
     return workersWithDistance.filter((worker) => {
       const query = searchQuery.toLowerCase();
+      const price = parseInt(worker.price.replace(/[^0-9]/g, ""));
 
       const matchesSearch =
         worker.name.toLowerCase().includes(query) ||
@@ -140,9 +144,11 @@ const Services = () => {
       const matchesCategory =
         categoryFilter === "All" || worker.profession === categoryFilter;
 
-      return matchesSearch && matchesCategory;
+      const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+
+      return matchesSearch && matchesCategory && matchesPrice;
     });
-  }, [workersWithDistance, searchQuery, categoryFilter]);
+  }, [workersWithDistance, searchQuery, categoryFilter, priceRange]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -186,11 +192,28 @@ const Services = () => {
                       : "bg-white text-gray-600 border hover:border-blue-400 hover:text-blue-600"
                   }`}
               >
+                {iconMap[cat] && <span className="mr-2">{iconMap[cat]}</span>}
                 {cat}
                 {isActive && <span className="ml-2 text-xs">●</span>}
               </button>
             );
           })}
+        </div>
+
+        {/* Price Filter */}
+        <div className="max-w-md mx-auto bg-white p-4 rounded-xl shadow-sm border">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Price Range: <span className="font-bold text-blue-600">${priceRange[0]}</span> - <span className="font-bold text-blue-600">${priceRange[1]}</span> / hr
+          </label>
+          <Slider
+            range
+            min={10}
+            max={150}
+            defaultValue={[20, 80]}
+            value={priceRange}
+            onChange={(value) => setPriceRange(value)}
+            className="w-full"
+          />
         </div>
       </div>
 
