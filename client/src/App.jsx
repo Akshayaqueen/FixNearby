@@ -14,6 +14,7 @@ import WorkerRegister from './pages/WorkerRegister';
 import HelpCenter from './pages/HelpCenter';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import NotFound from "./pages/NotFound";
 
 function AppShell() {
   const location = useLocation();
@@ -58,6 +59,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/worker-register" element={<WorkerRegister />} />
+            <Route path="*" element={<NotFound />} />
             {/* TODO: Add more routes here */}
           </Routes>
         </main>
