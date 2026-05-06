@@ -14,6 +14,7 @@ const Navbar = () => {
             {/* TODO: Add authentication logic to toggle links */}
             <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition duration-200 hover:underline underline-offset-4">Home</Link>
             <Link to="/services" className="text-gray-700 hover:text-blue-600 font-medium transition duration-200 hover:underline underline-offset-4">Services</Link>
+            <Link to="/worker-register" className="text-gray-700 hover:text-blue-600 font-medium transition duration-200 hover:underline underline-offset-4"> Become a Worker</Link>
             <Link to="/login" className="text-gray-700 hover:text-blue-600 font-medium transition duration-200 hover:underline underline-offset-4">Login</Link>
             <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">Register</Link>
             <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium transition duration-200 hover:underline underline-offset-4">Dashboard</Link>
