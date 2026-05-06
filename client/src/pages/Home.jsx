@@ -199,7 +199,7 @@ const Home = () => {
                     Find a Pro
                   </Link>
                   <Link
-                    to="/register"
+                    to="/worker-register"
                     className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-800 border border-slate-300 hover:bg-slate-50 transition"
                   >
                     Become a Pro
@@ -381,7 +381,7 @@ const Home = () => {
               Find a Pro
             </Link>
             <Link
-              to="/register"
+              to="/worker-register"
               className="bg-transparent border border-white/40 text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition"
             >
               Become a Pro

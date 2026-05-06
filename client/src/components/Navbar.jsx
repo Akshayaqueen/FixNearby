@@ -49,7 +49,7 @@ const Navbar = () => {
                   Log in
                 </Link>
                 <Link
-                  to="/register"
+                  to="/worker-register"
                   className="bg-[#0056D2] hover:bg-[#0047AF] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all duration-200 hover:shadow-md"
                 >
                   Join as a Pro
