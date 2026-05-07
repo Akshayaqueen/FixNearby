@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import axios from "axios";
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -18,6 +18,8 @@ const Register = () => {
   const [phoneError, setPhoneError] = useState("");
   const [errors, setErrors] = useState({});
   const [interacted, setInteracted] = useState({});
+  const [apiError,setApiError]=useState(null);
+  const [message, setMessage]=useState(null);
 
   // Indian phone number validation: 10 digits, starts with 6,7,8,9
   const validatePhoneNumber = (phone) => {
@@ -61,6 +63,7 @@ const Register = () => {
       const errorMsgs = validateFields(name, value);
       setErrors((prev) => ({ ...prev, [name]: errorMsgs }));
     }
+     console.log(`${import.meta.env.VITE_API_URL}`)
   };
 
   const handleBlur = (e) => {
@@ -72,7 +75,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setMessage(null);
+    setErrors({});
+    setApiError(null);
     setPhoneError("");
 
     // Validate phone number before submission
@@ -96,36 +101,27 @@ const Register = () => {
     }
 
     setLoading(true);
-
+  
     try {
-      const res = await fetch(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/register`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
-          }),
-        }
-      );
+          });
+    
+      const userData = res.data;
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Registration failed. Please try again.");
-        return;
-      }
-
-      login(data);
-      alert("Registration successful! Welcome to FixNearby.");
+      login(userData);
+      setMessage("Registration successful! Welcome to FixNearby.");
       navigate("/dashboard");
-    } catch {
-      setError("Network error. Please check your connection and try again.");
+    } catch(error) {
+      setError(error?.response?.data?.message || "Registration Failed. Please try again.");
     } finally {
       setLoading(false);
+      setFormData({name:"", email:"",phone: "", password:""});
     }
   };
 
@@ -138,9 +134,14 @@ const Register = () => {
           </h2>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-            {error}
+            {apiError}
+          </div>
+        )}
+         {message && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+            {message}
           </div>
         )}
 
