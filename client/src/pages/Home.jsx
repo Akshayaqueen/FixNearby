@@ -527,26 +527,58 @@ const Home = () => {
         </div>
       </section>
 
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            How It Works
-          </h2>
-          <p className="text-gray-500 mb-16">
-            Get your job done in 3 simple steps
+          <section className="py-24 bg-white">
+  <div className="max-w-7xl mx-auto px-4">
+
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-extrabold text-slate-900">
+        How It Works
+      </h2>
+      <p className="mt-3 text-slate-600">
+        Get your job done in 3 simple steps
+      </p>
+    </div>
+
+    <div className="grid md:grid-cols-3 gap-10 text-center">
+
+      {[
+        {
+          step: "1",
+          title: "Search",
+          desc: "Find skilled professionals near you"
+        },
+        {
+          step: "2",
+          title: "Book",
+          desc: "Choose time and confirm instantly"
+        },
+        {
+          step: "3",
+          title: "Relax",
+          desc: "Sit back and let experts handle it"
+        }
+      ].map((item) => (
+        <div key={item.step} className="p-8 border rounded-2xl bg-white shadow-sm hover:shadow-lg transition">
+
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#0056D2] text-white flex items-center justify-center font-bold">
+            {item.step}
+          </div>
+
+          <h3 className="text-xl font-semibold text-slate-900">
+            {item.title}
+          </h3>
+
+          <p className="text-slate-600 mt-2">
+            {item.desc}
           </p>
 
-          <div className="max-w-6xl mx-auto mt-10 grid md:grid-cols-3 gap-8">
-    {[
-      { step: "1", title: "Search", desc: "Find skilled workers near you" },
-      { step: "2", title: "Book", desc: "Choose time and confirm instantly" },
-      { step: "3", title: "Relax", desc: "Get your job done stress-free" },
-    ].map((s) => (
-      <div key={s.step} className="p-6 border rounded-xl hover:shadow-lg transition">
-        <div className="text-blue-600 font-bold text-xl">{s.step}</div>
-        <h3 className="font-semibold mt-2">{s.title}</h3>
-        <p className="text-gray-500 mt-1">{s.desc}</p>
-      </div>
-    ))}
+        </div>
+      ))}
+
     </div>
+
+  </div>
+</section>
       {/* ── Near You Section ── */}
       {/* Nearby (location-driven) */}
       {(geoLoading || coords || geoError) && (
