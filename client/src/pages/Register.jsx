@@ -9,79 +9,92 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
   });
-  const [interacted, setInteracted] = useState({});
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError]=useState(null);
+  
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [interacted, setInteracted] = useState({});
 
-  const validateFields=(name,value)=>{
-    const emailRegex= /^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
-    switch(name){
+  // Indian phone number validation: 10 digits, starts with 6,7,8,9
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateFields = (name, value) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
+    switch (name) {
       case "name":
-        if(!value.trim()) return "username is required"
+        if (!value.trim()) return "Username is required";
         break;
       case "email":
-        if(!value || !emailRegex.test(value)) return "Invalid email address"
+        if (!value || !emailRegex.test(value)) return "Invalid email address";
         break;
       case "password":
-        if(value.length < 6) return "Password must be atleast 6 characters"
+        if (value.length < 6) return "Password must be at least 6 characters";
         break;
       default:
         return "";
-        
     }
     return "";
-  }
+  };
+
   const handleChange = (e) => {
-    const {name, value}=e.target;
-
+    const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    //validate while typing only when user is interacted
-    if (interacted[name]) {
-      const errorMsgs = validateFields(name, value);
 
-      setErrors((prev) => ({ ...prev, [name]: errorMsgs }));
+    // Validate phone number in real-time
+    if (name === "phone") {
+      if (value && !validatePhoneNumber(value)) {
+        setPhoneError("Enter valid 10-digit mobile number starting with 6,7,8,9");
+      } else {
+        setPhoneError("");
+      }
     }
 
+    // Validate while typing only when user has interacted
+    if (interacted[name]) {
+      const errorMsgs = validateFields(name, value);
+      setErrors((prev) => ({ ...prev, [name]: errorMsgs }));
+    }
   };
-  
-  const handleBlur=(e)=>{
-    const {name, value}=e.target;
 
-    setInteracted((prev)=>({ ...prev, [name]:true}));
-
-    //validate when user leaves input
-    const errorMsgs= validateFields(name,value);
-
-    setErrors((prev)=> ({...prev, [name]: errorMsgs}));
-  }
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setInteracted((prev) => ({ ...prev, [name]: true }));
+    const errorMsgs = validateFields(name, value);
+    setErrors((prev) => ({ ...prev, [name]: errorMsgs }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors= {};
-    const allInteracted= {};
-    
-    Object.keys(formData).forEach((key)=> {
-      const errorMsg = validateFields(key,formData[key]);
-      if(errorMsg) newErrors[key]= errorMsg;
-    })
+    setError(null);
+    setPhoneError("");
 
-    //Mark all fields as interacted
-     Object.keys(formData).forEach((key)=>{
-        allInteracted[key]=true;
-     }) 
-     setInteracted(allInteracted);
+    // Validate phone number before submission
+    if (!validatePhoneNumber(formData.phone)) {
+      setPhoneError("Enter valid 10-digit mobile number starting with 6,7,8,9");
+      return;
+    }
 
-     //stop submit if error occurs
-    if(Object.keys(newErrors).length > 0){
-         setErrors(newErrors);
-         return;
-    }  
-    setErrors({});
-    setApiError(null);
+    // Validate all fields
+    const nameError = validateFields("name", formData.name);
+    const emailError = validateFields("email", formData.email);
+    const passwordError = validateFields("password", formData.password);
+
+    if (nameError || emailError || passwordError) {
+      setErrors({
+        name: nameError,
+        email: emailError,
+        password: passwordError,
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -93,6 +106,7 @@ const Register = () => {
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
+            phone: formData.phone,
             password: formData.password,
           }),
         }
@@ -101,16 +115,15 @@ const Register = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setApiError(data.message || "Registration failed. Please try again.");
+        setError(data.message || "Registration failed. Please try again.");
         return;
       }
 
-      // Automatically log the user in after registration
       login(data);
       alert("Registration successful! Welcome to FixNearby.");
       navigate("/dashboard");
     } catch {
-      setApiError("Network error. Please check your connection and try again.");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -118,82 +131,110 @@ const Register = () => {
 
   return (
     <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-md">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
             Create an account
           </h2>
         </div>
 
-         {apiError && (
-          <div className="mt-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-            {apiError}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+            {error}
           </div>
-        )} 
+        )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Full Name"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-             {interacted.name && errors.name && (
-          <div className="mt-1 text-red-700 text-sm">
-            {errors.name}
+        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            <div>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Full Name"
+                className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.name && interacted.name ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.name && interacted.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Email address"
+                className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.email && interacted.email ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.email && interacted.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Mobile Number (10 digits)"
+                className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  phoneError ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
+              <p className="text-gray-400 text-xs mt-1">
+                Enter 10-digit mobile number starting with 6,7,8, or 9
+              </p>
+            </div>
+
+            <div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Password"
+                className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.password && interacted.password ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.password && interacted.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
+            </div>
           </div>
-        )}
-            <input
-              id="email-address"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Email address"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
-            />
-             {interacted.email && errors.email && (
-          <div className="mt-1 text-red-700 text-sm">
-            {errors.email}
-          </div>
-        )}
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Password"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-             {interacted.password && errors.password && (
-          <div className="mt-1 text-red-700 text-sm">
-            {errors.password}
-          </div>
-        )}
-          </div>
-         
+
           <button
             type="submit"
             disabled={loading}
-            className="pt-2 w-full py-3 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="w-full py-2 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
           >
-            {loading ? "Creating your account..." : "Create Account"}
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{"  "}
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{" "}
           <Link to="/login" className="text-blue-600 hover:underline font-medium">
             Sign in
           </Link>
