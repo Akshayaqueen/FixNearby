@@ -1,18 +1,7 @@
 import { useState } from "react";
-
-const Register = () => {
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // TODO: Add registration logic and API connection
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    } catch (error) {
-      console.error('Registration failed:', error);
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -26,8 +15,9 @@ const Register = () => {
   });
 
   const [interacted, setInteracted] = useState({});
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState(null);
+  const [errors, setErrors]=useState({});
+  const [apiError,setApiError]=useState(null);
+  const [message, setMessage]=useState(null);
   const [loading, setLoading] = useState(false);
 
   // ---------------- VALIDATION ----------------
@@ -52,6 +42,12 @@ const Register = () => {
           return "Password must be at least 6 characters";
         }
         break;
+        
+       case "phone":
+          if (value && !/^[0-9]{10}$/.test(value.trim()) {
+              return "Enter a valid phone number";
+  }
+         break;
 
       default:
         return "";
@@ -103,6 +99,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage(null);
+    setErrors({});
+    setApiError(null);
 
     const newErrors = {};
     const allInteracted = {};
@@ -128,44 +127,27 @@ const Register = () => {
     setErrors({});
     setApiError(null);
     setLoading(true);
-
+  
     try {
-      const res = await fetch(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/register`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
-          }),
-        }
-      );
+          });
+    
+      const userData = res.data;
 
-      const data = await res.json();
+      login(userData);
+      setMessage("Registration successful! Welcome to FixNearby.");
+      
 
-      if (!res.ok) {
-        setApiError(
-          data.message ||
-            "Registration failed. Please try again."
-        );
-        return;
-      }
-
-      // Auto login after registration
-      login(data);
-
-      alert("Registration successful! Welcome to FixNearby.");
-
+      setFormData({name:"", email:"",phone: "", password:""});
       navigate("/dashboard");
-    } catch {
-      setApiError(
-        "Network error. Please check your connection and try again."
-      );
+    } catch(error) {
+      setApiError(error?.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -190,31 +172,30 @@ const Register = () => {
         {/* Heading */}
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900">
-            Create an Account
+            Create an account
           </h2>
 
           <p className="mt-2 text-sm text-gray-500">
             Join FixNearby and get started
           </p>
         </div>
-        {/* TODO: Add authentication logic and API connection */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+  
 
-        {/* API Error */}
         {apiError && (
-          <div className="mb-5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
             {apiError}
+          </div>
+        )}
+         {message && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+            {message}
           </div>
         )}
 
         {/* Form */}
-        <form
-          className="space-y-2"
-          onSubmit={handleSubmit}
-        >
-          {/* Name */}
+         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
+          {/* Name */}
             <input
               id="name"
               name="name"
@@ -236,15 +217,9 @@ const Register = () => {
               )}
             </div>
           </div>
+         
           <div>
-            <button type="submit" disabled={loading} className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-              <span className={`btn-text ${loading ? 'hidden' : ''}`}>Register</span>
-              <span className={`btn-loader ${loading ? '' : 'hidden'}`}>Loading...</span>
-            </button>
-          </div>
-
           {/* Email */}
-          <div>
             <input
               id="email-address"
               name="email"
@@ -266,8 +241,8 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Phone */}
           <div>
+          {/* Phone */}
             <input
               id="phone"
               name="phone"
@@ -279,7 +254,13 @@ const Register = () => {
             />
 
             {/* Empty reserved space */}
-            <div className="min-h-[22px]" />
+          <div className="min-h-[22px] mt-1 text-sm">
+              {interacted.phone && errors.phone && (
+                <span className="text-red-600">
+                  {errors.phone}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Password */}
@@ -313,7 +294,7 @@ const Register = () => {
           >
             {loading
               ? "Creating your account..."
-              : "Create Account"}
+              : "Create account"}
           </button>
         </form>
 
